@@ -2,7 +2,7 @@ var path=require('path');
 var http=require('http');
 var express=require('express');
 var socketIO=require('socket.io');
-var {generateMessage} =require('./utils/message')
+var {generateMessage, generateLocationMessage} =require('./utils/message')
 var PublicPath=path.join(__dirname,'../public');
 var port=process.env.PORT || 3000;
 var app=express();                                                                             
@@ -22,16 +22,18 @@ io.on('connection',(socket)=>{
             text:createMessage.text,
             createdAt: new Date().getTime()
         })
-        callback('from server');
+        callback();
+    })
+    socket.on('createLocation',function(coords){
+        io.emit('newLocationMessage',generateLocationMessage(`admin `,coords.latitude, coords.longitude));
     })
    
- 
-    socket.on('disconnect',()=>{
+  
+   socket.on('disconnect',()=>{
         console.log('user disconnect...')
     })
     
 })
-
 server.listen(port,()=>{
     console.log('start listing.........')
 })
