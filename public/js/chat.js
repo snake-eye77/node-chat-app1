@@ -1,8 +1,30 @@
 var socket=io();
+ function scrollToBottam(){
+     var messages=jQuery('#messages');
+     var newMessage=messages.children('li:last-child');
+     var clientHeight=messages.prop('clientHeight');                                                    //Height
+     var scrollTop=messages.prop('scrollTop');
+     var scrollHeight=messages.prop('scrollHeight')
+    var newMessageHeight=newMessage.innerHeight();
+     var lastMessageHeight=newMessage.prev().innerHeight();
+     if(clientHeight+scrollTop+newMessageHeight+lastMessageHeight>=scrollHeight){
+        // console.log('should scroll...')
+        messages.scrollTop(scrollHeight)
+     }
+ }
 socket.on('connect',()=>{
-    console.log('connected to server..')
+   var params=jQuery.deparam(window.location.search);
+   socket.emit('join',params,function(err){
+       if(err){
+           alert(err);
+           window.location.href='/'
+}else{
+           console.log('no err');
+ }
+   })
   
 })
+
 socket.on('newMessage', function (message) {
     var template=jQuery('#message-template').html();
     var formettedTime=moment(message.createdAt).format('hh:mm a')
@@ -12,7 +34,7 @@ socket.on('newMessage', function (message) {
         createdAt:formettedTime
     });
     jQuery('#messages').append(html)
-
+    scrollToBottam();
 
     // var formettedTime=moment(message.createdAt).format('hh:mm a')
     // console.log('newMessage', message);
@@ -31,6 +53,7 @@ socket.on('newMessage', function (message) {
        createdAt:formettedTime
     });
     jQuery('#messages').append(html)
+    scrollToBottam();
 
     // var formettedTime=moment(message.createdAt).format('hh:mm a')
     //   var li=jQuery('<li></li>');
@@ -45,6 +68,13 @@ socket.on('newMessage', function (message) {
 
 socket.on('disconnect',()=>{
     console.log('disconnect from server....')
+})
+socket.on('updateUserList',function(users){
+   var ol=jQuery('<ol></ol>');
+   users.forEach(function(user){
+       ol.append(jQuery('<li></li>').text(user))
+   })
+   jQuery('#users').html(ol)
 })
 jQuery('#message-form').on('submit',function(e){
     e.preventDefault();
