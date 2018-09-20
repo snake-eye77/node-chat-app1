@@ -15,42 +15,43 @@ var users=new Users();
 app.use(express.static(PublicPath));
 io.on('connection',(socket)=>{
     console.log('new user connected.....');
-    // socket.emit('newMessage',generateMessage('admin','welcome to chat app'))
-    //     socket.broadcast.emit('newMessage',generateMessage('admin','new user connected..'));
-        socket.on('join',(params,callback)=>{
-                if(!isRealString(params.name || !isRealString(params.Room))){
-                   return callback('name and room name is require..')
-                }
-         socket.join(params.room);
-         users.removeUser(socket.id);
-       users.addUser(socket.id,params.name,params.room);
-       io.to(params.room).emit('updateUserList',users.getUserList(params.room));
-        socket.emit('newMessage',generateMessage('Admin','welcome to chat app'));
-          socket.broadcast.to(params.room).emit('newMessage',generateMessage('Admin',`${params.name} has joined....`));
-         callback();
-  })
-   socket.on('createMessage',function(createMessage,callback){
-        console.log(createMessage);
+
+
+socket.on('join', (params, callback) => {
+    if (!isRealString(params.name) || !isRealString(params.Room)) {
+      return callback('Name and room name are required.');
+    }
+
+    socket.join(params.room);
+    users.removeUser(socket.id);
+    users.addUser(socket.id, params.name, params.room);
+
+    io.to(params.room).emit('updateUserList', users.getUserList(params.room));
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
+    callback();
+  });
+socket.on('createMessage',function(createMessage,callback){
+        var user=users.getUser(socket.id);
+        if(user && isRealString(createMessage.text)){
+            io.to(user.room).emit('newMessage', generateMessage(user.name,createMessage.text));
+
+        }
         
-        io.emit('newMessage',{
-            from:createMessage.from,                                          //heroku git:remote -a [app_name]
-            text:createMessage.text,
-            createdAt: new Date().getTime()
-        })
+      
         callback();
     })
     socket.on('createLocation',function(coords){
-        io.emit('newLocationMessage',generateLocationMessage(`admin `,coords.latitude, coords.longitude));
+        var user=users.getUser(socket.id);
+        if(user){
+            io.to(user.room).emit('newLocationMessage',generateLocationMessage(user.name,coords.latitude, coords.longitude));
+        }
+       
     })
    
   
    socket.on('disconnect',()=>{
-    // var user=users.removeUser(socket.id);
-    // if(user){
-    //     io.to(user.room).emit('updateUserList',users.getUserList(user.room))
-    //     io.to(user.room).emit('newMessage',generateMessage('Admin',`${user.name}  has left...`))
-        
-    // }
+
     var user = users.removeUser(socket.id);
    
 
