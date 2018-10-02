@@ -70,7 +70,7 @@ socket.on('createMessage',function(createMessage,callback){
     
 })
 server.listen(port,()=>{
-    console.log('start listing.........')
+    console.log(`Server started at port ${port}`);
 })
 
 
