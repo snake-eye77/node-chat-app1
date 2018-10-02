@@ -18,7 +18,7 @@ io.on('connection',(socket)=>{
 
 
 socket.on('join', (params, callback) => {
-    if (!isRealString(params.name) || !isRealString(params.Room)) {
+    if (!isRealString(params.name) || !isRealString(params.room)) {
       return callback('Name and room name are required.');
     }
 
@@ -72,4 +72,8 @@ socket.on('createMessage',function(createMessage,callback){
 server.listen(port,()=>{
     console.log('start listing.........')
 })
+
+
+
+
 
